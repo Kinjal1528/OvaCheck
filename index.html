@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OvaCheck - PCOS Detection System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 600px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .description {
+            color: #888;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .input-hint {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .result.positive {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .result.negative {
+            background: linear-gradient(135deg, #51cf66, #40c057);
+            color: white;
+            box-shadow: 0 5px 15px rgba(81, 207, 102, 0.3);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .medical-note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #856404;
+            text-align: center;
+        }
+
+        .icon {
+            font-size: 1.2rem;
+            margin-right: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+            
+            .logo {
+                font-size: 2rem;
+            }
+        }
+
+        /* Loading animation */
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #667eea;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🔬 OvaCheck</div>
+            <div class="subtitle">AI-Powered PCOS Detection</div>
+            <div class="description">
+                Advanced machine learning analysis for early PCOS screening
+            </div>
+        </div>
+
+        <form action="/predict" method="post" id="pcosForm">
+            <div class="form-group">
+                <label for="bmi">
+                    <span class="icon">⚖️</span>Body Mass Index (BMI)
+                </label>
+                <input type="number" step="0.1" name="bmi" id="bmi" required>
+                <div class="input-hint">Normal range: 18.5-24.9</div>
+            </div>
+
+            <div class="form-group">
+                <label for="irregularity">
+                    <span class="icon">📅</span>Menstrual Irregularity
+                </label>
+                <select name="irregularity" id="irregularity" style="width: 100%; padding: 15px 20px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 1rem; background: #fafafa; transition: all 0.3s ease;" required>
+                    <option value="">Select an option</option>
+                    <option value="0">Regular periods (No)</option>
+                    <option value="1">Irregular periods (Yes)</option>
+                </select>
+                <div class="input-hint">Select if you experience irregular menstrual cycles</div>
+            </div>
+
+            <div class="form-group">
+                <label for="testosterone">
+                    <span class="icon">🧪</span>Testosterone Level (ng/dL)
+                </label>
+                <input type="number" step="0.1" name="testosterone" id="testosterone" required>
+                <div class="input-hint">Normal female range: 15-70 ng/dL</div>
+            </div>
+
+            <div class="form-group">
+                <label for="follicle">
+                    <span class="icon">🥚</span>Antral Follicle Count
+                </label>
+                <input type="number" name="follicle" id="follicle" required>
+                <div class="input-hint">Count of small follicles in ovaries (typically 3-12 per ovary)</div>
+            </div>
+
+            <div class="form-group">
+                <label for="age">
+                    <span class="icon">🎂</span>Your Age
+                </label>
+                <input type="number" name="age" id="age" min="1" max="100" required>
+                <div class="input-hint">Enter your current age in years</div>
+            </div>
+
+            <button type="submit" class="submit-btn">
+                <span class="icon">🔍</span>Analyze for PCOS
+            </button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing your data...</p>
+        </div>
+
+        {% if prediction_text %}
+            <div class="result {{ 'positive' if 'positive' in prediction_text.lower() or 'detected' in prediction_text.lower() else 'negative' }}">
+                <span class="icon">{{ '⚠️' if 'positive' in prediction_text.lower() or 'detected' in prediction_text.lower() else '✅' }}</span>
+                {{ prediction_text }}
+            </div>
+        {% endif %}
+
+        <div class="medical-note">
+            <strong>⚕️ Medical Disclaimer:</strong> This AI tool is for screening purposes only. 
+            Please consult with a qualified healthcare professional for proper diagnosis and treatment.
+        </div>
+    </div>
+
+    <script>
+        // Add form validation and user experience improvements
+        document.getElementById('pcosForm').addEventListener('submit', function(e) {
+            // Show loading animation
+            document.getElementById('loading').style.display = 'block';
+            
+            // Hide submit button temporarily
+            const submitBtn = document.querySelector('.submit-btn');
+            submitBtn.style.opacity = '0.7';
+            submitBtn.disabled = true;
+            
+            // Re-enable after form submission (in case of validation errors)
+            setTimeout(() => {
+                submitBtn.style.opacity = '1';
+                submitBtn.disabled = false;
+                document.getElementById('loading').style.display = 'none';
+            }, 3000);
+        });
+
+        // Add focus effects for select element
+        document.getElementById('irregularity').addEventListener('focus', function() {
+            this.style.borderColor = '#667eea';
+            this.style.background = 'white';
+            this.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+            this.style.transform = 'translateY(-2px)';
+        });
+
+        document.getElementById('irregularity').addEventListener('blur', function() {
+            this.style.borderColor = '#e0e0e0';
+            this.style.background = '#fafafa';
+            this.style.boxShadow = 'none';
+            this.style.transform = 'translateY(0)';
+        });
+
+        // Add input validation hints
+        document.getElementById('bmi').addEventListener('input', function() {
+            const value = parseFloat(this.value);
+            const hint = this.nextElementSibling;
+            if (value < 18.5) {
+                hint.style.color = '#3498db';
+                hint.textContent = 'BMI indicates underweight';
+            } else if (value <= 24.9) {
+                hint.style.color = '#27ae60';
+                hint.textContent = 'BMI is in normal range ✓';
+            } else if (value <= 29.9) {
+                hint.style.color = '#f39c12';
+                hint.textContent = 'BMI indicates overweight';
+            } else if (value >= 30) {
+                hint.style.color = '#e74c3c';
+                hint.textContent = 'BMI indicates obesity';
+            } else {
+                hint.style.color = '#666';
+                hint.textContent = 'Normal range: 18.5-24.9';
+            }
+        });
+
+        document.getElementById('testosterone').addEventListener('input', function() {
+            const value = parseFloat(this.value);
+            const hint = this.nextElementSibling;
+            if (value >= 15 && value <= 70) {
+                hint.style.color = '#27ae60';
+                hint.textContent = 'Testosterone level is in normal range ✓';
+            } else if (value > 70) {
+                hint.style.color = '#e74c3c';
+                hint.textContent = 'Elevated testosterone level';
+            } else {
+                hint.style.color = '#666';
+                hint.textContent = 'Normal female range: 15-70 ng/dL';
+            }
+        });
+    </script>
+</body>
+</html>
